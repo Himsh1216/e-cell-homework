@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F6F8F4">
+<title>Expedition Log: somewhere worth exploring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F8F4; --grid:#E1E9E3; --ink:#1B2A22; --muted:#5F6D66; --line:#CBD5CE;
+  --a:#EF8A17; --a-soft:#FFF1E2; --b:#3D5AD1; --b-soft:#E9EDFB;
+  --drop:#C63D2F; --ok:#2E7D5B; --amber:#9A6B00;
+  --accent:var(--a); --accent-soft:var(--a-soft);
+  --font-display:"Bricolage Grotesque","Avenir Next Condensed","Arial Narrow",system-ui,sans-serif;
+  --font-body:"Instrument Sans","Segoe UI",Roboto,Helvetica,Arial,system-ui,sans-serif;
+}
+body[data-track="B"]{--accent:var(--b);--accent-soft:var(--b-soft)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--paper)}
+body{margin:0;padding:0 0 84px;color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px}
+.wrap{max-width:760px;margin:0 auto;padding:16px 16px 32px}
+h1,h2,h3{font-family:var(--font-display);line-height:1.1;margin:0 0 .4em;letter-spacing:-.01em}
+h1{font-size:clamp(34px,7vw,52px);font-weight:800}
+h2{font-size:clamp(24px,4.5vw,30px);font-weight:700}
+h3{font-size:19px;font-weight:700}
+p{margin:0 0 1em}
+b,strong{font-weight:600}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+a{color:var(--b)}
+i{font-style:italic}
+
+/* top strip */
+.strip{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line)}
+.strip-in{max-width:760px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.strip .brand{font-family:var(--font-display);font-weight:800;font-size:17px}
+.strip .who{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{display:inline-block;margin-left:2px;padding:1px 8px;border-radius:999px;background:var(--accent);color:#fff;font-size:12px;font-weight:600}
+.strip .lvl{margin-left:auto;text-align:right;font-size:13px;line-height:1.25;min-width:150px}
+.xpbar{height:6px;background:var(--grid);border-radius:3px;overflow:hidden;margin-top:6px}
+.xpbar i{display:block;height:100%;background:var(--accent);width:0;transition:width .5s ease}
+
+/* sheets and forms */
+.sheet{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;margin:0 0 14px}
+.f{display:block;margin:0 0 14px}
+.f:last-child{margin-bottom:0}
+.lbl{display:block;font-weight:600;font-size:14px;margin-bottom:6px}
+.hint{font-weight:400;color:var(--muted);display:block;font-size:13px;margin-top:2px}
+input[type=text],input[type=date],textarea{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+textarea{min-height:64px;resize:vertical}
+input:focus,textarea:focus{outline:3px solid rgba(239,138,23,.35);outline-offset:1px;border-color:var(--accent)}
+body[data-track="B"] input:focus,body[data-track="B"] textarea:focus{outline-color:rgba(61,90,209,.3)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.counter{font-size:12px;color:var(--muted);text-align:right;margin-top:3px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:inherit;font-size:14px;padding:8px 12px;border:1px solid var(--line);background:#fff;border-radius:999px;cursor:pointer;color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn{font:inherit;font-weight:600;font-size:15px;padding:11px 16px;border-radius:8px;border:1px solid var(--ink);background:var(--ink);color:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn.accent{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.ghost{background:#fff;color:var(--ink)}
+.btn.danger{background:#fff;color:var(--drop);border-color:var(--drop)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+.back{font:inherit;font-size:14px;background:none;border:0;color:var(--b);padding:0;cursor:pointer;margin-bottom:10px;text-decoration:underline}
+.step-k{font-size:13px;color:var(--muted);margin-bottom:2px}
+.footer-nav{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 24px}
+
+/* bottom nav */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:#fff;border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+.nav-in{max-width:760px;margin:0 auto;display:flex}
+.nav button{flex:1;font:inherit;font-size:13px;font-weight:600;background:none;border:0;padding:6px 4px;color:var(--muted);cursor:pointer;border-radius:8px}
+.nav button[aria-current="page"]{color:var(--accent)}
+.nav svg{display:block;margin:0 auto 2px;width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* intro */
+.hero{padding:22px 0 6px}
+.kicker{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--muted)}
+.hero .quote{font-size:clamp(30px,7.6vw,56px);line-height:1.02;letter-spacing:-.02em;margin:8px 0 16px}
+.rules{display:flex;gap:6px;margin:0 0 16px}
+.rules span{display:block;height:6px;width:64px;border-radius:3px}
+.rules .ra{background:var(--a)} .rules .rb{background:var(--b)}
+.tracks{display:grid;gap:12px;grid-template-columns:1fr;margin-bottom:16px}
+@media(min-width:640px){.tracks{grid-template-columns:1fr 1fr}}
+.track{border:1px solid var(--line);border-radius:12px;padding:16px;background:#fff;display:flex;flex-direction:column}
+.track.a{border-left:8px solid var(--a)} .track.b{border-left:8px solid var(--b)}
+.track h3{margin-bottom:4px}
+.track ul{margin:6px 0 10px 18px;padding:0;font-size:14.5px}
+.track li{margin-bottom:4px}
+.track .pick{color:var(--muted);font-size:13.5px;margin-bottom:12px;flex:1}
+.track.a .btn{background:var(--a);border-color:var(--a)}
+.track.b .btn{background:var(--b);border-color:var(--b)}
+.credit{font-size:13px;color:var(--muted);margin-top:20px}
+
+/* map */
+.map{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:14px}
+.map .contour{fill:none;stroke:var(--grid);stroke-width:1.5}
+.map .trail{fill:none;stroke:var(--ink);stroke-width:2;stroke-dasharray:6 5;opacity:.45}
+.map .campg .camp{fill:#fff;stroke:var(--line);stroke-width:2;stroke-dasharray:3 3}
+.map .campg.lit .camp{fill:var(--accent);stroke:var(--accent);stroke-dasharray:none}
+.map .campg text{font:700 9px var(--font-display);fill:var(--muted)}
+.map .campg.lit text{fill:#fff}
+.map .campg.last .camp{transform-origin:center;animation:campPop .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes campPop{0%{transform:scale(.4)}100%{transform:scale(1)}}
+.map .summit .pole{stroke:var(--ink);stroke-width:2}
+.map .summit .flag{fill:#fff;stroke:var(--ink);stroke-width:1.5}
+.map .summit.lit .flag{fill:var(--accent);stroke:var(--accent)}
+.map .map-title{font:600 11px var(--font-body);fill:var(--ink)}
+.map .map-sub{font:700 12px var(--font-display);fill:var(--accent)}
+.map .coast{fill:#F3F6F2;stroke:var(--ink);stroke-width:1.5;stroke-dasharray:4 3;opacity:.7}
+.map .map-domain{font:800 18px var(--font-display);fill:var(--ink);opacity:.32}
+.map .rowlbl{font:500 9px var(--font-body);fill:var(--muted)}
+.map .landmark path,.map .hazard rect,.map .guide circle{fill:#fff;stroke:var(--line);stroke-width:2}
+.map .landmark.lit path,.map .hazard.lit rect,.map .guide.lit circle{fill:var(--accent);stroke:var(--accent)}
+.map .hazard.picked rect{fill:var(--ink);stroke:var(--ink)}
+.map .landmark text,.map .hazard text,.map .guide text{font:700 9px var(--font-display);fill:var(--muted)}
+.map .hazard.lit text,.map .guide.lit text,.map .hazard.picked text{fill:#fff}
+
+/* camp */
+.quests{padding:4px 12px}
+.quest{display:flex;align-items:center;gap:12px;padding:12px 4px;border:0;border-top:1px solid var(--line);cursor:pointer;width:100%;background:none;text-align:left;font:inherit;color:var(--ink)}
+.quest:first-child{border-top:0}
+.quest .n{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-family:var(--font-display);font-weight:700;font-size:13px;flex:none}
+.quest.done .n{background:var(--accent);border-color:var(--accent);color:#fff}
+.quest.active .n{border-color:var(--accent);color:var(--accent)}
+.quest .t{flex:1;min-width:0}
+.quest .t small{display:block;color:var(--muted);font-size:13px}
+.quest .pg{font-family:var(--font-display);font-weight:700;color:var(--muted);flex:none}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.badge{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;max-width:100%}
+.badge.locked{opacity:.45;filter:grayscale(1)}
+.badge b{display:block;font-weight:600}
+.badge .ic{font-size:20px;flex:none}
+.actions .btn{margin-bottom:4px}
+
+/* interviews */
+.irow{display:flex;gap:12px;align-items:center;width:100%;text-align:left;font:inherit;background:none;border:0;border-top:1px solid var(--line);padding:12px 4px;color:var(--ink);cursor:pointer}
+.irow:first-child{border-top:0}
+.irow .n{font-family:var(--font-display);font-weight:800;color:var(--accent);width:24px;flex:none}
+.irow .t{flex:1;min-width:0}
+.irow .t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.irow .t small{color:var(--muted);font-size:13px}
+.sig{display:inline-flex;gap:8px;align-items:center;padding:5px 10px;border-radius:999px;font-size:13px;background:var(--grid);flex:none}
+.sig-strong{background:#DDF3E7;color:var(--ok)} .sig-mixed{background:#FFF1D6;color:var(--amber)} .sig-weak{background:#FBE3E0;color:var(--drop)}
+.cand{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;font:inherit;font-size:14px;background:#fff;border:1px dashed var(--line);border-radius:8px;padding:10px;margin:0 0 8px;color:var(--ink);cursor:pointer}
+.cand:hover{border-color:var(--accent)}
+.cand .ic{flex:none}
+
+/* decision */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+@media(min-width:560px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stats div{border:1px solid var(--line);border-radius:8px;padding:10px}
+.stats b{display:block;font-family:var(--font-display);font-size:24px;line-height:1;font-weight:800}
+.stats span{font-size:12.5px;color:var(--muted)}
+.verdict-strong{color:var(--ok)} .verdict-mixed{color:var(--amber)} .verdict-weak{color:var(--drop)}
+.choices{display:grid;gap:8px;grid-template-columns:1fr;margin-bottom:14px}
+@media(min-width:560px){.choices{grid-template-columns:repeat(3,1fr)}}
+.choice{font:inherit;text-align:left;padding:12px;border:2px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;color:var(--ink)}
+.choice b{display:block;font-family:var(--font-display);font-size:18px;letter-spacing:.04em;font-weight:800}
+.choice span{font-size:13px;color:var(--muted)}
+.choice[aria-pressed="true"]{color:#fff}
+.choice[aria-pressed="true"] span{color:rgba(255,255,255,.85)}
+.choice.continue[aria-pressed="true"]{background:var(--ok);border-color:var(--ok)}
+.choice.change[aria-pressed="true"]{background:var(--a);border-color:var(--a)}
+.choice.drop[aria-pressed="true"]{background:var(--drop);border-color:var(--drop)}
+
+/* track B pick */
+.pick-row{border-top:1px solid var(--line);padding:14px 0}
+.pick-row:first-child{border-top:0;padding-top:0}
+.pick-row.sel{background:var(--accent-soft);margin:0 -16px;padding-left:16px;padding-right:16px}
+.pick-head{margin-bottom:8px}
+.pick-crit{display:flex;align-items:center;gap:10px;margin:6px 0;flex-wrap:wrap}
+.pick-crit>span{width:118px;font-size:13.5px;color:var(--muted)}
+.pick-crit .seg button{padding:5px 10px;font-size:13px}
+.pick-total{font-family:var(--font-display);font-weight:700}
+.legend{font-size:13px;color:var(--muted);margin:0 0 12px}
+
+/* guide */
+details{border:1px solid var(--line);border-radius:10px;background:#fff;padding:0 16px;margin-bottom:10px}
+summary{cursor:pointer;font-weight:700;padding:12px 0;font-family:var(--font-display);font-size:17px}
+details[open] summary{border-bottom:1px solid var(--line)}
+details .in{padding:10px 0 14px;font-size:15px}
+details ul{margin:6px 0 10px 18px;padding:0}
+details li{margin-bottom:8px}
+details p{margin:0}
+
+/* toasts and confetti */
+#toasts{position:fixed;top:12px;left:0;right:0;z-index:50;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 12px}
+.toast{background:var(--ink);color:#fff;padding:10px 14px;border-radius:10px;font-size:14px;display:flex;gap:10px;align-items:center;box-shadow:0 8px 24px rgba(27,42,34,.25);animation:pop .25s ease;max-width:420px}
+.toast .ic{font-size:22px}
+.toast.badge-toast{background:#fff;color:var(--ink);border:2px solid var(--accent)}
+@keyframes pop{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:40;display:none}
+
+/* one page */
+#onepage{display:none}
+#onepage.show{display:block}
+.op-wrap{overflow-x:auto;padding:0 16px 32px}
+.op{background:#fff;border:1px solid var(--line);padding:12mm;width:210mm;max-width:210mm;margin:0 auto 24px;font-size:11.5px;line-height:1.35;color:var(--ink);font-family:var(--font-body)}
+.op h1{font-size:22px;margin:0 0 2px}
+.op .meta{display:flex;justify-content:space-between;gap:12px;border-bottom:2px solid var(--accent);padding-bottom:6px;margin-bottom:8px;font-size:12px}
+.op h2{font-size:14px;margin:10px 0 4px;padding-bottom:2px;border-bottom:1px solid var(--line)}
+.op p{margin:0 0 4px}
+.op table{width:100%;border-collapse:collapse;font-size:10.5px}
+.op th,.op td{border:1px solid var(--line);padding:3px 5px;vertical-align:top;text-align:left}
+.op th{background:#F1F4F0;font-weight:600}
+.op tr.sel td{background:var(--accent-soft)}
+.op ol,.op ul{margin:2px 0 4px 18px;padding:0}
+.op li{margin-bottom:2px}
+.op .decision{display:inline-block;padding:3px 10px;border:2px solid var(--ink);border-radius:6px;font-family:var(--font-display);font-weight:800;font-size:14px;letter-spacing:.04em}
+.op .decision.DROP{border-color:var(--drop);color:var(--drop)}
+.op .decision.CONTINUE{border-color:var(--ok);color:var(--ok)}
+.op .decision.CHANGE{border-color:var(--a);color:var(--a)}
+.op .foot{margin-top:10px;font-size:10px;color:var(--muted)}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+@media print{
+  @page{size:A4;margin:10mm}
+  html,body{background:#fff;padding:0;margin:0}
+  #app,#toasts,#confetti{display:none!important}
+  #onepage{display:block!important}
+  .op-wrap{overflow:visible;padding:0}
+  .op{border:0;padding:0;width:auto;max-width:none;margin:0;font-size:10.5pt}
+  .op table{font-size:9.2pt}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="onepage"></div>
+<div id="toasts"></div>
+<canvas id="confetti"></canvas>
+<script>
+(function(){
+'use strict';
+var KEY='expedition-log-v1';
+var $=function(s,r){return (r||document).querySelector(s);};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function trim(v){return String(v==null?'':v).trim();}
+function pad(n){return String(n).padStart(2,'0');}
+function fmtDate(iso){ if(!iso)return ''; var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso); if(!m)return iso; var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return parseInt(m[3],10)+' '+months[parseInt(m[2],10)-1]+' '+m[1]; }
+function getPath(o,p){ return p.split('.').reduce(function(a,k){return a==null?undefined:a[k];},o); }
+function setPath(o,p,v){ var ks=p.split('.'); var cur=o; for(var i=0;i<ks.length-1;i++){ if(cur[ks[i]]==null)cur[ks[i]]={}; cur=cur[ks[i]]; } cur[ks[ks.length-1]]=v; }
+
+/* ---------- state ---------- */
+function newInterview(){ return {id:'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),who:'',when:'',whenDetail:'',did:'',cost:'',pain:0,workaround:'',workaroundText:'',quote:'',notes:''}; }
+function defaultState(){ return {v:1,name:'',track:null,deadline:'',
+  A:{problem:{statement:'',who:'',why:''},interviews:[],evidence:['','',''],decision:{choice:'',why:'',next:''}},
+  B:{domain:{name:'',why:'',access:''},
+     apps:[0,1,2].map(function(){return {name:'',where:'',why:''};}),
+     problems:[0,1,2,3,4].map(function(){return {what:'',who:'',whyUnsolved:'',source:'',sev:0,freq:0,pay:0,access:0};}),
+     experts:[0,1,2].map(function(){return {name:'',how:'',insight:'',date:''};}),
+     pick:{index:-1,why:'',next:''}}}; }
+function mergeArr(def,src,n){ var out=[]; for(var i=0;i<n;i++) out.push(Object.assign({},def[i]||def[0],(src&&src[i]&&typeof src[i]==='object')?src[i]:{})); return out; }
+function migrate(s){ var o=defaultState(); if(!s||typeof s!=='object')return o; var d=defaultState();
+  o.name=typeof s.name==='string'?s.name:''; o.track=(s.track==='A'||s.track==='B')?s.track:null; o.deadline=typeof s.deadline==='string'?s.deadline:'';
+  var A=s.A||{}, B=s.B||{};
+  o.A.problem=Object.assign(o.A.problem,A.problem||{});
+  o.A.interviews=Array.isArray(A.interviews)?A.interviews.map(function(i){return Object.assign(newInterview(),i||{});}):[];
+  o.A.evidence=[0,1,2].map(function(k){return (A.evidence&&typeof A.evidence[k]==='string')?A.evidence[k]:'';});
+  o.A.decision=Object.assign(o.A.decision,A.decision||{});
+  o.B.domain=Object.assign(o.B.domain,B.domain||{});
+  o.B.apps=mergeArr(d.B.apps,B.apps,3); o.B.problems=mergeArr(d.B.problems,B.problems,5); o.B.experts=mergeArr(d.B.experts,B.experts,3);
+  o.B.pick=Object.assign(o.B.pick,B.pick||{});
+  return o; }
+
+var store={
+  load:function(){ return new Promise(function(resolve){
+    var tryLocal=function(){ try{ var raw=window.localStorage.getItem(KEY); resolve(raw?JSON.parse(raw):null); }catch(e){ resolve(null); } };
+    try{ if(window.storage&&typeof window.storage.get==='function'){ window.storage.get(KEY,false).then(function(r){ resolve(r&&r.value?JSON.parse(r.value):null); }).catch(tryLocal); return; } }catch(e){}
+    tryLocal(); }); },
+  save:function(s){ var raw=JSON.stringify(s);
+    try{ if(window.storage&&typeof window.storage.set==='function'){ window.storage.set(KEY,raw,false).catch(function(){}); return; } }catch(e){}
+    try{ window.localStorage.setItem(KEY,raw); }catch(e){} }
+};
+var saveT=null; function scheduleSave(){ clearTimeout(saveT); saveT=setTimeout(function(){store.save(state);},250); }
+
+var state=defaultState();
+var ui={screen:'intro',step:null,editing:null};
+var lastBadges={}, lastLevel=0, ready=false;
+
+/* ---------- rules of the game ---------- */
+var LEVELS=[[0,'Armchair explorer'],[80,'Scout'],[200,'Pathfinder'],[330,'Trailblazer'],[450,'Expedition leader']];
+function levelOf(xp){ var i=0; for(var k=0;k<LEVELS.length;k++){ if(xp>=LEVELS[k][0]) i=k; } var nx=LEVELS[i+1]; return {index:i,name:LEVELS[i][1],min:LEVELS[i][0],next:nx?nx[0]:null}; }
+var WHEN=[['today','Today or yesterday'],['week','This week'],['month','This month'],['year','This year'],['older','Longer ago'],['never','Never, actually']];
+var RECENCY={today:5,week:4,month:3,year:2,older:1,never:0};
+function whenLabel(v){ for(var i=0;i<WHEN.length;i++){ if(WHEN[i][0]===v)return WHEN[i][1]; } return ''; }
+function validInterviews(s){ return s.A.interviews.filter(function(i){return !!trim(i.who);}); }
+function signal(i){ var sc=0; sc+=RECENCY[i.when]||0; sc+=Number(i.pain)||0; if(i.workaround==='yes')sc+=3; if(trim(i.did))sc+=2; return sc; }
+function signalLabel(sc){ return sc>=10?'strong':sc>=6?'mixed':'weak'; }
+function readout(s){ var v=validInterviews(s); var n=v.length; if(!n)return null;
+  var recent=v.filter(function(i){return i.when==='today'||i.when==='week'||i.when==='month';}).length;
+  var wa=v.filter(function(i){return i.workaround==='yes';}).length;
+  var rated=v.filter(function(i){return Number(i.pain)>0;});
+  var avgPain=rated.length?rated.reduce(function(a,i){return a+Number(i.pain);},0)/rated.length:0;
+  var never=v.filter(function(i){return i.when==='never';}).length;
+  var quotes=v.filter(function(i){return !!trim(i.quote);}).length;
+  var verdict='mixed';
+  if(n>=5){ if(recent/n>=0.6&&wa/n>=0.4&&avgPain>=3.5)verdict='strong'; else if(recent/n<=0.3||avgPain<2.5||never/n>=0.4)verdict='weak'; }
+  return {n:n,recent:recent,wa:wa,avgPain:avgPain,never:never,quotes:quotes,verdict:verdict}; }
+function pickOk(s){ var k=s.B.pick.index; return k>=0&&!!s.B.problems[k]&&!!trim(s.B.problems[k].what); }
+
+var QUESTS={
+  A:[{id:'problem',title:'Name the problem',short:'Problem',sub:'One line. Who has it, and why it matters.',progress:function(s){return [trim(s.A.problem.statement)?1:0,1];}},
+     {id:'interviews',title:'Talk to 10 relevant people',short:'People',sub:'When it last happened, what they did, cost / time / risk / effort, workaround.',progress:function(s){return [Math.min(validInterviews(s).length,10),10];}},
+     {id:'evidence',title:'3 strongest pieces of evidence',short:'Evidence',sub:'The three things that would convince a skeptic.',progress:function(s){return [s.A.evidence.filter(function(e){return !!trim(e);}).length,3];}},
+     {id:'decision',title:'Verdict: continue, change or drop',short:'Verdict',sub:'Decide, and say why.',progress:function(s){return [s.A.decision.choice?1:0,1];}}],
+  B:[{id:'domain',title:'Choose one domain',short:'Domain',sub:'One domain, and the access you already have.',progress:function(s){return [trim(s.B.domain.name)?1:0,1];}},
+     {id:'apps',title:'3 applications',short:'Apps',sub:'Where it is used today, by whom, and what is at stake.',progress:function(s){return [s.B.apps.filter(function(a){return !!trim(a.name);}).length,3];}},
+     {id:'problems',title:'5 problems or limitations',short:'Problems',sub:'What stops the applications from being better.',progress:function(s){return [s.B.problems.filter(function(p){return !!trim(p.what);}).length,5];}},
+     {id:'experts',title:'Speak to 3 knowledgeable people',short:'People',sub:'Fifteen minutes each. Bring your five problems.',progress:function(s){return [s.B.experts.filter(function(e){return !!trim(e.name);}).length,3];}},
+     {id:'pick',title:'Select one problem to investigate',short:'Pick',sub:'Score, choose, and plan the next seven days.',progress:function(s){return [pickOk(s)?1:0,1];}}]
+};
+function isDone(q,s){ var p=q.progress(s); return p[0]>=p[1]; }
+function allDone(s){ if(!s.track)return false; return QUESTS[s.track].every(function(q){return isDone(q,s);}); }
+
+function xpOf(s){ var xp=0;
+  var p=s.A.problem; if(trim(p.statement))xp+=40; if(trim(p.who))xp+=10; if(trim(p.why))xp+=10;
+  s.A.interviews.forEach(function(i){ if(!trim(i.who))return; xp+=10; if(i.when)xp+=4; if(trim(i.did))xp+=4; if(trim(i.cost)||Number(i.pain)>0)xp+=4; if(i.workaround)xp+=4; if(trim(i.quote))xp+=4; });
+  s.A.evidence.forEach(function(e){ if(trim(e))xp+=20; });
+  var d=s.A.decision; if(d.choice){ xp+=50; if(trim(d.why))xp+=30; if(trim(d.next))xp+=20; }
+  var dm=s.B.domain; if(trim(dm.name))xp+=40; if(trim(dm.why))xp+=10; if(trim(dm.access))xp+=10;
+  s.B.apps.forEach(function(a){ if(!trim(a.name))return; xp+=15; if(trim(a.where))xp+=5; if(trim(a.why))xp+=5; });
+  s.B.problems.forEach(function(q){ if(!trim(q.what))return; xp+=15; if(trim(q.who))xp+=5; if(trim(q.whyUnsolved))xp+=5; });
+  s.B.experts.forEach(function(e){ if(!trim(e.name))return; xp+=15; if(trim(e.how))xp+=5; if(trim(e.insight))xp+=15; if(e.date)xp+=5; });
+  if(pickOk(s)){ xp+=50; if(trim(s.B.pick.why))xp+=30; if(trim(s.B.pick.next))xp+=20; }
+  return xp; }
+
+var BADGES=[
+  {id:'track',ic:'🧭',name:'Committed',desc:'Chose a track',when:function(s){return !!s.track;}},
+  {id:'named',ic:'🎯',name:'Named the beast',desc:'Wrote the problem in one line',track:'A',when:function(s){return !!trim(s.A.problem.statement);}},
+  {id:'first',ic:'👣',name:'First contact',desc:'Logged your first conversation',track:'A',when:function(s){return validInterviews(s).length>=1;}},
+  {id:'five',ic:'⛺',name:'Halfway camp',desc:'Five people talked to',track:'A',big:true,when:function(s){return validInterviews(s).length>=5;}},
+  {id:'ten',ic:'🏔️',name:'Summit',desc:'Ten people talked to',track:'A',big:true,when:function(s){return validInterviews(s).length>=10;}},
+  {id:'quotes',ic:'💬',name:'In their words',desc:'Three quotes captured',track:'A',when:function(s){return validInterviews(s).filter(function(i){return !!trim(i.quote);}).length>=3;}},
+  {id:'workaround',ic:'🔧',name:'Workaround detective',desc:'Found three people already hacking a fix',track:'A',when:function(s){return validInterviews(s).filter(function(i){return i.workaround==='yes';}).length>=3;}},
+  {id:'fresh',ic:'🐾',name:'Fresh tracks',desc:'Three people hit it this week',track:'A',when:function(s){return validInterviews(s).filter(function(i){return i.when==='today'||i.when==='week';}).length>=3;}},
+  {id:'evidence',ic:'🧾',name:'Evidence locker',desc:'Three strongest pieces of evidence',track:'A',when:function(s){return s.A.evidence.filter(function(e){return !!trim(e);}).length>=3;}},
+  {id:'verdict',ic:'⚖️',name:'Verdict delivered',desc:'Continue, change or drop',track:'A',big:true,when:function(s){return !!s.A.decision.choice;}},
+  {id:'drop',ic:'🪂',name:'Brave drop',desc:'Killed a weak idea in a week. That is a win.',track:'A',when:function(s){return s.A.decision.choice==='DROP';}},
+  {id:'change',ic:'🔄',name:'Course correction',desc:'Changed the problem because the evidence said so',track:'A',when:function(s){return s.A.decision.choice==='CHANGE';}},
+  {id:'domain',ic:'🗺️',name:'Territory claimed',desc:'Chose one domain',track:'B',when:function(s){return !!trim(s.B.domain.name);}},
+  {id:'apps',ic:'📍',name:'Three landmarks',desc:'Three applications mapped',track:'B',when:function(s){return s.B.apps.filter(function(a){return !!trim(a.name);}).length>=3;}},
+  {id:'hazards',ic:'⚠️',name:'Five hazards',desc:'Five problems or limitations found',track:'B',big:true,when:function(s){return s.B.problems.filter(function(p){return !!trim(p.what);}).length>=5;}},
+  {id:'guide1',ic:'🧑‍🏫',name:'First guide',desc:'Spoke to one knowledgeable person',track:'B',when:function(s){return s.B.experts.filter(function(e){return !!trim(e.name);}).length>=1;}},
+  {id:'council',ic:'🏛️',name:'Council of three',desc:'Three knowledgeable people consulted',track:'B',big:true,when:function(s){return s.B.experts.filter(function(e){return !!trim(e.name);}).length>=3;}},
+  {id:'x',ic:'🚩',name:'X marks the spot',desc:'Selected one problem to dig into',track:'B',big:true,when:function(s){return pickOk(s);}},
+  {id:'ready',ic:'📄',name:'Session 3 ready',desc:'Every quest complete. Print the page.',big:true,when:function(s){return allDone(s);}}
+];
+
+/* ---------- helpers for views ---------- */
+function field(type,path,label,hint,val,max,ph){ var id='f_'+path.replace(/\W/g,'_'); var maxAttr=max?' maxlength="'+max+'"':'';
+  var ctl=type==='textarea'
+    ?'<textarea id="'+id+'" data-bind="'+path+'"'+maxAttr+' placeholder="'+esc(ph||'')+'" rows="2">'+esc(val)+'</textarea>'
+    :'<input id="'+id+'" type="'+type+'" data-bind="'+path+'"'+maxAttr+' placeholder="'+esc(ph||'')+'" value="'+esc(val)+'">';
+  return '<label class="f" for="'+id+'"><span class="lbl">'+esc(label)+(hint?'<span class="hint">'+esc(hint)+'</span>':'')+'</span>'+ctl+(max?'<div class="counter" data-counter-for="'+id+'">'+String(val||'').length+'/'+max+'</div>':'')+'</label>'; }
+function seg(path,opts,cur,numeric){ return '<div class="seg">'+opts.map(function(o){ return '<button type="button" data-set="'+path+'" data-value="'+esc(String(o[0]))+'"'+(numeric?' data-num="1"':'')+' aria-pressed="'+(String(cur)===String(o[0]))+'">'+esc(o[1])+'</button>'; }).join('')+'</div>'; }
+function stepHeader(title,n,total){ return '<button class="back" data-action="camp">Base camp</button><div class="step-k">Step '+n+' of '+total+'</div><h2>'+esc(title)+'</h2>'; }
+function stepFooter(prev,next){ return '<div class="footer-nav">'+(prev?'<button class="btn ghost" data-action="goto-step" data-step="'+prev+'">Previous step</button>':'')+(next?'<button class="btn" data-action="goto-step" data-step="'+next+'">Next step</button>':'<button class="btn" data-action="page">See the one page</button>')+'<button class="btn ghost" data-action="camp">Base camp</button></div>'; }
+function daysLeft(){ if(!state.deadline)return null; var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(state.deadline); if(!m)return null; var t=new Date(); var a=new Date(t.getFullYear(),t.getMonth(),t.getDate()); var b=new Date(+m[1],+m[2]-1,+m[3]); return Math.round((b-a)/86400000); }
+
+/* ---------- maps ---------- */
+var CAMPS=[[28,188],[62,196],[98,178],[124,150],[158,152],[196,166],[232,146],[254,110],[290,92],[326,56]], SUMMIT=[344,30];
+function smoothPath(pts){ var d='M'+pts[0][0]+' '+pts[0][1]; for(var i=0;i<pts.length-1;i++){ var p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2; var c1=[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6], c2=[p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6]; d+=' C'+c1[0].toFixed(1)+' '+c1[1].toFixed(1)+', '+c2[0].toFixed(1)+' '+c2[1].toFixed(1)+', '+p2[0]+' '+p2[1]; } return d; }
+var CONTOURS='<path class="contour" d="M60 70 C 90 30, 170 34, 190 70 C 210 106, 150 126, 110 118 C 70 110, 40 100, 60 70 Z"/><path class="contour" d="M80 74 C 100 48, 160 50, 176 74 C 192 98, 150 112, 118 106 C 90 100, 68 92, 80 74 Z"/><path class="contour" d="M230 150 C 250 120, 320 120, 336 150 C 350 178, 300 200, 262 194 C 232 190, 214 172, 230 150 Z"/><path class="contour" d="M246 152 C 260 132, 312 132, 322 152 C 332 172, 296 186, 268 182 C 250 178, 236 168, 246 152 Z"/>';
+function mapA(){ var n=validInterviews(state).length; var d=smoothPath(CAMPS.concat([SUMMIT])); var dec=state.A.decision.choice; var st=trim(state.A.problem.statement);
+  var title=st?(st.length>42?st.slice(0,42)+'…':st):'Name the problem to label this trail';
+  return '<svg class="map" viewBox="0 0 360 220" role="img" aria-label="Trail map: '+Math.min(n,10)+' of 10 camps reached"><g>'+CONTOURS+'</g><path class="trail" d="'+d+'"/>'+
+    CAMPS.map(function(p,k){ return '<g class="campg'+(k<n?' lit':'')+(k===n-1?' last':'')+'" transform="translate('+p[0]+' '+p[1]+')"><circle class="camp" r="9"/><text y="3.5" text-anchor="middle">'+(k+1)+'</text></g>'; }).join('')+
+    '<g class="summit'+(dec?' lit':'')+'" transform="translate('+SUMMIT[0]+' '+SUMMIT[1]+')"><path class="pole" d="M0 0 L0 -22"/><path class="flag" d="M0 -22 L14 -17 L0 -12 Z"/></g>'+
+    '<text x="12" y="16" class="map-title">'+esc(title)+'</text><text x="348" y="212" text-anchor="end" class="map-sub">'+(n>=10?'Summit reached':Math.min(n,10)+' of 10 camps')+'</text></svg>'; }
+function mapB(){ var b=state.B; var apps=b.apps.filter(function(a){return !!trim(a.name);}).length; var probs=b.problems.map(function(p){return !!trim(p.what);}); var ex=b.experts.filter(function(e){return !!trim(e.name);}).length; var pk=b.pick.index; var np=probs.filter(Boolean).length;
+  return '<svg class="map" viewBox="0 0 360 220" role="img" aria-label="Territory map: '+apps+' of 3 applications, '+np+' of 5 problems, '+ex+' of 3 people"><g>'+CONTOURS+'</g>'+
+    '<path class="coast" d="M40 120 C 50 60, 130 30, 200 42 C 260 52, 330 70, 322 130 C 314 180, 240 200, 170 192 C 100 184, 34 170, 40 120 Z"/>'+
+    '<text x="186" y="118" text-anchor="middle" class="map-domain">'+esc(trim(b.domain.name)||'Unnamed territory')+'</text>'+
+    '<text x="14" y="62" class="rowlbl">applications</text><text x="14" y="154" class="rowlbl">problems</text><text x="14" y="200" class="rowlbl">people</text>'+
+    [0,1,2].map(function(k){ return '<g class="landmark'+(k<apps?' lit':'')+'" transform="translate('+(120+k*70)+' 62)"><path d="M0 0 L-9 -15 L9 -15 Z"/><text y="-20" text-anchor="middle">A'+(k+1)+'</text></g>'; }).join('')+
+    [0,1,2,3,4].map(function(k){ return '<g class="hazard'+(probs[k]?' lit':'')+(pk===k?' picked':'')+'" transform="translate('+(96+k*48)+' 150)"><rect x="-8" y="-8" width="16" height="16" transform="rotate(45)"/><text y="3.5" text-anchor="middle">'+(pk===k?'X':k+1)+'</text></g>'; }).join('')+
+    [0,1,2].map(function(k){ return '<g class="guide'+(k<ex?' lit':'')+'" transform="translate('+(140+k*50)+' 196)"><circle r="8"/><text y="3.5" text-anchor="middle">'+(k+1)+'</text></g>'; }).join('')+
+    '<text x="12" y="16" class="map-title">'+apps+' of 3 applications, '+np+' of 5 problems, '+ex+' of 3 people</text>'+(pickOk(state)?'<text x="348" y="212" text-anchor="end" class="map-sub">X marks the spot</text>':'')+'</svg>'; }
+
+/* ---------- views ---------- */
+function strip(){ var xp=xpOf(state), L=levelOf(xp); var pct=L.next?Math.round((xp-L.min)/(L.next-L.min)*100):100;
+  return '<header class="strip"><div class="strip-in"><div><div class="brand">Expedition log</div><div class="who"><span>'+esc(state.name||'Explorer')+'</span><span class="pill">Track '+state.track+'</span></div></div><div class="lvl"><b>'+esc(L.name)+'</b><br><span class="muted">'+xp+' XP'+(L.next?' ('+(L.next-xp)+' more to '+esc(LEVELS[L.index+1][1])+')':'')+'</span><div class="xpbar"><i style="width:'+pct+'%"></i></div></div></div></header>'; }
+function navBar(){ var cur=ui.screen==='step'?'camp':ui.screen;
+  var ic={camp:'<svg viewBox="0 0 24 24"><path d="M3 20h18L12 5z"/><path d="M12 5v15"/><path d="M8 20l4-8 4 8"/></svg>',
+          guide:'<svg viewBox="0 0 24 24"><path d="M4 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/></svg>',
+          page:'<svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/></svg>'};
+  return '<nav class="nav"><div class="nav-in"><button data-action="camp" aria-current="'+(cur==='camp'?'page':'false')+'">'+ic.camp+'Camp</button><button data-action="guide" aria-current="'+(cur==='guide'?'page':'false')+'">'+ic.guide+'Field guide</button><button data-action="page" aria-current="'+(cur==='page'?'page':'false')+'">'+ic.page+'One page</button></div></nav>'; }
+
+function viewIntro(){ var has=!!state.track;
+  return '<section class="hero"><div class="kicker">Expedition log</div><h1 class="quote">You do not need a startup idea. You need somewhere worth exploring.</h1><div class="rules"><span class="ra"></span><span class="rb"></span></div>'+
+  '<p>Session 2 homework from the entrepreneurship course by Prof. Soobhankar, CEO of the Research and Entrepreneurship Park, IIT Bhubaneswar. Bring one page to Session 3. This log turns the assignment into a week-long expedition and prints that page at the end.</p></section>'+
+  '<div class="sheet">'+field('text','name','Your name','It goes on the one page.',state.name,40,'')+'</div>'+
+  '<h2>Choose one of two tracks</h2><div class="tracks">'+
+  '<div class="track a"><h3>Track A: I have a problem</h3><ul><li>Talk to 10 relevant people.</li><li>Capture when it last happened, what they did, cost / time / risk / effort, and the existing workaround.</li><li>Pick the 3 strongest pieces of evidence.</li><li>Decide: continue, change or drop.</li></ul><span class="pick">Choose this if you have seen a specific problem happen to real people, including you.</span><button class="btn" data-action="choose-track" data-track="A">Start Track A</button></div>'+
+  '<div class="track b"><h3>Track B: I have a domain</h3><ul><li>Choose one domain.</li><li>Find 3 applications and 5 problems or limitations.</li><li>Speak to at least 3 knowledgeable people.</li><li>Select one problem for deeper investigation.</li></ul><span class="pick">Choose this if a field pulls at you but you cannot name a problem yet. Drones, space, batteries, AI.</span><button class="btn" data-action="choose-track" data-track="B">Start Track B</button></div></div>'+
+  (has?'<p><button class="btn ghost" data-action="camp">Keep Track '+state.track+' and go back to camp</button></p>':'')+
+  '<p class="credit">Progress saves in this browser on this device. Nothing is uploaded anywhere. Download a backup from base camp before changing phones.</p>'; }
+
+function viewCamp(){ var q=QUESTS[state.track]; var done=q.filter(function(x){return isDone(x,state);}).length; var nextQ=null; for(var i=0;i<q.length;i++){ if(!isDone(q[i],state)){nextQ=q[i];break;} } var dl=daysLeft();
+  var dlText=dl==null?'Set the date to get a countdown.':dl<0?'Was '+(-dl)+' day'+(dl===-1?'':'s')+' ago.':dl===0?'Is today.':dl+' day'+(dl===1?'':'s')+' left.';
+  return (state.track==='A'?mapA():mapB())+
+  '<h2>Base camp</h2><p class="muted">'+(allDone(state)?'Every quest is complete. Print your page and bring it to Session 3.':done+' of '+q.length+' quests done.'+(nextQ?' Next: '+esc(nextQ.title).toLowerCase()+'.':''))+'</p>'+
+  '<div class="sheet quests">'+q.map(function(x,k){ var p=x.progress(state); var dn=p[0]>=p[1]; return '<button class="quest'+(dn?' done':'')+(x===nextQ?' active':'')+'" data-action="goto-step" data-step="'+x.id+'"><span class="n">'+(dn?'✓':k+1)+'</span><span class="t">'+esc(x.title)+'<small>'+esc(x.sub)+'</small></span><span class="pg">'+p[0]+'/'+p[1]+'</span></button>'; }).join('')+'</div>'+
+  '<div class="sheet"><div class="row between"><div><b>Session 3</b><div class="small muted">'+dlText+'</div></div><input type="date" data-bind="deadline" value="'+esc(state.deadline)+'" style="width:auto" aria-label="Session 3 date"></div></div>'+
+  '<h3>Badges</h3><div class="badges">'+BADGES.filter(function(b){return !b.track||b.track===state.track;}).map(function(b){ var on=b.when(state); return '<div class="badge'+(on?'':' locked')+'"><span class="ic">'+b.ic+'</span><span><b>'+esc(b.name)+'</b><span class="small muted">'+esc(b.desc)+'</span></span></div>'; }).join('')+'</div>'+
+  '<div class="sheet actions"><h3>For the group</h3><p class="small muted">Post your progress line in the E-Cell group. No accounts, no leaderboard server: the group chat is the leaderboard.</p><div class="row"><button class="btn ghost" data-action="copy-status">Copy progress line</button></div></div>'+
+  '<div class="sheet actions"><h3>Your data</h3><p class="small muted">Saved in this browser on this device. Download a backup before switching phones or clearing the browser.</p><div class="row"><button class="btn ghost" data-action="export">Download backup</button><button class="btn ghost" data-action="import">Restore backup</button><button class="btn ghost" data-action="switch-track">Switch track</button><button class="btn danger" data-action="reset">Start over</button></div><input type="file" id="importfile" accept="application/json,.json" hidden></div>'; }
+
+function viewStep(){ var t=state.track; var st=ui.step||QUESTS[t][0].id;
+  if(t==='A'){ if(st==='problem')return viewProblem(); if(st==='interviews')return ui.editing?viewInterviewEditor():viewInterviews(); if(st==='evidence')return viewEvidence(); if(st==='decision')return viewDecision(); }
+  else { if(st==='domain')return viewDomain(); if(st==='apps')return viewApps(); if(st==='problems')return viewProblems(); if(st==='experts')return viewExperts(); if(st==='pick')return viewPick(); }
+  ui.screen='camp'; return viewCamp(); }
+
+/* Track A */
+function viewProblem(){ var p=state.A.problem;
+  return stepHeader('Name the problem',1,4)+'<p class="muted">One line, in plain words, about a specific person. "Hostel students lose 40 minutes a week queueing for the one working printer" beats "printing is inefficient".</p><div class="sheet">'+
+  field('textarea','A.problem.statement','The problem','',p.statement,160,'')+field('text','A.problem.who','Who has it?','The specific kind of person you will talk to',p.who,100,'')+field('textarea','A.problem.why','Why do you think it matters?','Your hypothesis. The 10 conversations will test it.',p.why,160,'')+'</div>'+stepFooter(null,'interviews'); }
+function interviewRow(i,idx){ var sc=signal(i), lab=signalLabel(sc); var empty=!trim(i.who);
+  return '<button class="irow" data-action="edit-interview" data-id="'+esc(i.id)+'"><span class="n">'+(idx+1)+'</span><span class="t"><b>'+(empty?'<i>Unnamed, tap to fill in</i>':esc(i.who))+'</b><small>'+(i.when?esc(whenLabel(i.when)):'When did it last happen?')+(i.workaround==='yes'?', has a workaround':'')+(trim(i.quote)?', quote captured':'')+'</small></span><span class="sig sig-'+lab+'">'+lab+'</span></button>'; }
+function viewInterviews(){ var list=state.A.interviews; var n=validInterviews(state).length;
+  return stepHeader('Talk to 10 relevant people',2,4)+'<p class="muted">Relevant means they have had the problem, not that they like you. Log each conversation within the hour, while it is fresh. Fifteen minutes each is enough.</p><div class="sheet" style="padding:4px 12px">'+
+  (list.length?list.map(interviewRow).join(''):'<p class="muted" style="padding:10px 0">No conversations logged yet. The first is the hardest; start with someone you already know, and end by asking who else has this problem.</p>')+'</div>'+
+  '<div class="row" style="margin-bottom:12px"><button class="btn accent" data-action="add-interview">Log a conversation</button><span class="muted small">'+n+' of 10'+(n>10?' (extra ones count too)':'')+'</span></div>'+stepFooter('problem','evidence'); }
+function signalBox(i){ var sc=signal(i), lab=signalLabel(sc); var tips=[]; if(!i.when)tips.push('Ask when it last happened.'); if(!trim(i.did))tips.push('Ask what they actually did.'); if(!Number(i.pain))tips.push('Rate the pain.'); if(!i.workaround)tips.push('Ask how they handle it today.'); if(!trim(i.quote))tips.push('Grab one line in their words.');
+  return '<div class="sig sig-'+lab+'"><b>Signal: '+lab+'</b> <span>'+sc+'/15</span></div><p class="small muted" style="margin:8px 0 0">'+(tips.length?tips.join(' '):'Complete capture. This one is ready for the one page.')+'</p>'; }
+function viewInterviewEditor(){ var idx=-1; for(var k=0;k<state.A.interviews.length;k++){ if(state.A.interviews[k].id===ui.editing){idx=k;break;} } if(idx<0){ ui.editing=null; return viewInterviews(); } var i=state.A.interviews[idx]; var p='A.interviews.'+idx+'.';
+  return '<button class="back" data-action="goto-step" data-step="interviews">Back to the list</button><h2>Conversation '+(idx+1)+'</h2><div class="sheet">'+
+  field('text',p+'who','Who did you talk to?','Name and role, and why they count as relevant',i.who,90,'Rohan, final year, runs the drone club')+
+  '<div class="f"><span class="lbl">When did it last happen to them?</span>'+seg(p+'when',WHEN,i.when)+'</div>'+
+  field('text',p+'whenDetail','That last time, in one line','',i.whenDetail,120,'Tuesday before the lab viva, 40 minutes in the printer queue')+
+  field('textarea',p+'did','What did they do about it?','Actions they actually took, not what they say they would do',i.did,160,'')+
+  field('textarea',p+'cost','Cost / time / risk / effort','What it cost them, in numbers where possible',i.cost,160,'2 hours, 400 rupees, and a late submission')+
+  '<div class="f"><span class="lbl">How painful was it?<span class="hint">1 shrugged it off. 5 would pay to make it go away today.</span></span>'+seg(p+'pain',[[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5']],i.pain,true)+'</div>'+
+  '<div class="f"><span class="lbl">Existing workaround?</span>'+seg(p+'workaround',[['yes','Yes'],['no','No'],['unknown','Did not ask']],i.workaround)+'</div>'+
+  field('textarea',p+'workaroundText','What do they do today instead?','A hack, a spreadsheet, a cousin who helps. Workarounds are the strongest evidence of real pain.',i.workaroundText,160,'')+
+  field('text',p+'quote','One thing they said, in their own words','Optional, but a real quote beats three of your sentences on the one page',i.quote,160,'')+
+  field('textarea',p+'notes','Raw notes','Anything else. Not printed.',i.notes,0,'')+'</div>'+
+  '<div class="sheet" id="sigbox">'+signalBox(i)+'</div>'+
+  '<div class="footer-nav"><button class="btn" data-action="goto-step" data-step="interviews">Done, back to the list</button><button class="btn danger" data-action="del-interview" data-id="'+esc(i.id)+'">Delete this one</button></div>'; }
+function candidates(s){ var out=[]; validInterviews(s).forEach(function(i,k){ var who=trim(i.who.split(',')[0])||('Person '+(k+1));
+  if(trim(i.quote))out.push({ic:'💬',text:who+': "'+trim(i.quote)+'"'});
+  if(i.workaround==='yes'&&trim(i.workaroundText))out.push({ic:'🔧',text:who+' already works around it: '+trim(i.workaroundText)});
+  if(trim(i.cost)&&Number(i.pain)>=4)out.push({ic:'💸',text:who+', pain '+i.pain+'/5: '+trim(i.cost)});
+  if((i.when==='today'||i.when==='week')&&trim(i.whenDetail))out.push({ic:'🐾',text:who+', this week: '+trim(i.whenDetail)}); });
+  var r=readout(s); if(r&&r.n>=3)out.unshift({ic:'📊',text:r.recent+' of '+r.n+' people hit it within the last month; '+r.wa+' already have a workaround'});
+  return out.slice(0,12); }
+function viewEvidence(){ var c=candidates(state);
+  return stepHeader('3 strongest pieces of evidence',3,4)+'<p class="muted">Evidence is something that happened, not something someone felt. A workaround, a number, a quote, a recent incident. Rank the top three.</p><div class="sheet">'+
+  [0,1,2].map(function(k){ return field('textarea','A.evidence.'+k,'Evidence '+(k+1),'',state.A.evidence[k],200,k===0?'e.g. 6 of 10 built their own spreadsheet to track it':''); }).join('')+'</div>'+
+  (c.length?'<div class="sheet"><h3>From your conversations</h3><p class="muted small">Tap one to drop it into the next empty slot, then edit it.</p>'+c.map(function(x){ return '<button class="cand" data-action="use-cand" data-text="'+esc(x.text)+'"><span class="ic">'+x.ic+'</span><span>'+esc(x.text)+'</span></button>'; }).join('')+'</div>':'')+stepFooter('interviews','decision'); }
+var VERDICT_TEXT={strong:'Recent, painful, and people already pay in effort to get around it. Continue, and go deeper with the same people.',mixed:'Some signal, some noise. Change something: a narrower who, a sharper what, or a different segment. Then talk to five more.',weak:'Few recent incidents, or little pain. Dropping now costs a week; dropping in a year costs a company. A drop earns the same XP as a continue.'};
+var CHOICE_TEXT={CONTINUE:'The problem is real and recent. Go deeper.',CHANGE:'Right area, wrong framing. Narrow the who or the what.',DROP:'Not painful enough. Walk away proud.'};
+function viewDecision(){ var r=readout(state); var d=state.A.decision; var read='';
+  if(!r) read='<p class="muted">No conversations logged yet. The verdict needs evidence; go talk to people first.</p>';
+  else { var v=r.n>=5?r.verdict:null;
+    read='<div class="stats"><div><b>'+r.recent+'/'+r.n+'</b><span>hit it in the last month</span></div><div><b>'+r.wa+'/'+r.n+'</b><span>have a workaround</span></div><div><b>'+(r.avgPain?r.avgPain.toFixed(1):'–')+'/5</b><span>average pain</span></div><div><b>'+r.never+'</b><span>never had it</span></div></div>'+
+    (v?'<p class="verdict-'+v+'"><b>The evidence reads '+v+'.</b> '+VERDICT_TEXT[v]+' Your call.</p>':'<p class="muted">Log at least 5 conversations to get a reading; you have '+r.n+'.</p>'); }
+  return stepHeader('Verdict',4,4)+'<div class="sheet">'+read+'</div><div class="sheet"><span class="lbl">Your decision</span><div class="choices">'+['CONTINUE','CHANGE','DROP'].map(function(c){ return '<button class="choice '+c.toLowerCase()+'" data-set="A.decision.choice" data-value="'+c+'" aria-pressed="'+(d.choice===c)+'"><b>'+c+'</b><span>'+CHOICE_TEXT[c]+'</span></button>'; }).join('')+'</div>'+
+  field('textarea','A.decision.why','Why?','The evidence that decided it, in two lines',d.why,240,'')+field('text','A.decision.next','Next step','What you will do in the 7 days after Session 3',d.next,160,'')+'</div>'+stepFooter('evidence',null); }
+
+/* Track B */
+var CHIPS=['Drones','Space','Batteries','AI','Robotics','EVs','Agritech','Healthtech','Semiconductors','Climate'];
+function viewDomain(){ var d=state.B.domain;
+  return stepHeader('Choose one domain',1,5)+'<p class="muted">One. Not two you are torn between. Curiosity plus access beats hype: pick the field you can actually get into this month.</p><div class="sheet"><div class="f"><span class="lbl">Domain</span>'+seg('B.domain.name',CHIPS.map(function(c){return [c,c];}),d.name)+'</div>'+
+  field('text','B.domain.name','Or write your own','',d.name,60,'e.g. Cold-chain logistics')+field('textarea','B.domain.why','Why this one?','',d.why,160,'')+field('textarea','B.domain.access','What access do you already have?','Courses, labs, projects, people, internships',d.access,160,'')+'</div>'+stepFooter(null,'apps'); }
+function viewApps(){ return stepHeader('3 applications',2,5)+'<p class="muted">Where is '+esc(trim(state.B.domain.name)||'this domain')+' actually used today, by whom, and what is at stake? Concrete beats grand: "crop spraying for five-acre farms", not "agriculture".</p>'+
+  state.B.apps.map(function(a,k){ return '<div class="sheet"><h3>Application '+(k+1)+'</h3>'+field('text','B.apps.'+k+'.name','What is it?','',a.name,80,'')+field('text','B.apps.'+k+'.where','Where, and by whom?','',a.where,120,'')+field('textarea','B.apps.'+k+'.why','Why does it matter?','Scale, money, lives, time',a.why,160,'')+'</div>'; }).join('')+stepFooter('domain','problems'); }
+function viewProblems(){ return stepHeader('5 problems or limitations',3,5)+'<p class="muted">Limitations are where physics, cost, regulation or skills stop the applications from being better. The "Limitations" section of a paper and the complaints of a practitioner are your two best sources.</p>'+
+  state.B.problems.map(function(p,k){ return '<div class="sheet"><h3>Problem '+(k+1)+'</h3>'+field('textarea','B.problems.'+k+'.what','The problem or limitation','',p.what,140,'')+field('text','B.problems.'+k+'.who','Who does it hurt?','',p.who,100,'')+field('text','B.problems.'+k+'.whyUnsolved','Why is it still unsolved?','Physics, cost, regulation, skills, incentives',p.whyUnsolved,140,'')+field('text','B.problems.'+k+'.source','Where did you learn this?','Paper, report, person, product',p.source,80,'')+'</div>'; }).join('')+stepFooter('apps','experts'); }
+function viewExperts(){ return stepHeader('Speak to 3 knowledgeable people',4,5)+'<p class="muted">Professors, PhD scholars, REP founders, alumni on LinkedIn. Ask for 15 minutes and bring your five problems: "Which of these is real, and what am I missing?"</p>'+
+  state.B.experts.map(function(e,k){ return '<div class="sheet"><h3>Person '+(k+1)+'</h3>'+field('text','B.experts.'+k+'.name','Name and role','',e.name,80,'')+field('text','B.experts.'+k+'.how','How did you reach them?','',e.how,100,'')+field('textarea','B.experts.'+k+'.insight','Their key insight','What they said that you could not have found online',e.insight,200,'')+field('date','B.experts.'+k+'.date','When','',e.date,0,'')+'</div>'; }).join('')+stepFooter('problems','pick'); }
+var CRIT=[['sev','Severity'],['freq','Frequency'],['pay','Someone pays'],['access','Your access']];
+function viewPick(){ var probs=state.B.problems; var pk=state.B.pick; var filled=[]; probs.forEach(function(p,k){ if(trim(p.what))filled.push({p:p,k:k}); });
+  if(!filled.length) return stepHeader('Select one problem',5,5)+'<div class="sheet"><p class="muted" style="margin:0">Write your five problems first; there is nothing to choose from yet.</p></div>'+stepFooter('experts',null);
+  var rows=filled.map(function(x){ var p=x.p,k=x.k; var all=CRIT.every(function(c){return Number(p[c[0]])>0;}); var tot=all?CRIT.reduce(function(a,c){return a+Number(p[c[0]]);},0):null;
+    return '<div class="pick-row'+(pk.index===k?' sel':'')+'"><div class="pick-head"><b>Problem '+(k+1)+'.</b> '+esc(p.what)+'</div>'+CRIT.map(function(c){ return '<div class="pick-crit"><span>'+c[1]+'</span>'+seg('B.problems.'+k+'.'+c[0],[[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5']],p[c[0]],true)+'</div>'; }).join('')+
+    '<div class="row between" style="margin-top:8px"><span class="pick-total">'+(tot!=null?'Score '+tot+'/20':'Rate all four to score')+'</span><button class="btn'+(pk.index===k?'':' ghost')+'" data-action="pick" data-index="'+k+'">'+(pk.index===k?'Selected':'Select this one')+'</button></div></div>'; }).join('');
+  return stepHeader('Select one problem',5,5)+'<p class="muted">Score each problem from 1 to 5 on four things. The score is a lantern, not a verdict: pick the one you would still be curious about in a month.</p><p class="legend">Severity: how bad when it happens. Frequency: how often. Someone pays: a budget or customer exists. Your access: you can reach the people and the tech.</p><div class="sheet">'+rows+'</div><div class="sheet">'+
+  field('textarea','B.pick.why','Why this one?','',pk.why,240,'')+field('text','B.pick.next','Next step','What you will do in the 7 days after Session 3',pk.next,160,'')+'</div>'+stepFooter('experts',null); }
+
+/* Guide and page */
+function viewGuide(){ var A=state.track==='A';
+  var secA='<details'+(A?' open':'')+'><summary>Getting to 10 people</summary><div class="in"><ul><li>Start with the two easiest: a friend and a senior who have had the problem. End every conversation with "Who else deals with this? Can you message them for me?" One referral per chat gets you to 10 in five days.</li><li>Fifteen minutes is enough. Canteen, hostel corridor, a voice-note exchange, a call to a cousin in industry: all count. Log it within the hour, while the details are sharp.</li><li>Relevant means they have had the problem. "Would be interested" does not count.</li></ul></div></details>'+
+  '<details><summary>Questions that produce evidence</summary><div class="in"><ul><li>"Walk me through the last time this happened." Recency and detail.</li><li>"What did you do about it?" Behaviour, not intention.</li><li>"What did that cost you: money, hours, risk, effort?" Push for a number.</li><li>"How do you handle it today?" The workaround. Someone who built a spreadsheet, pays a cousin, or drives 20 km has already voted with effort.</li><li>"Have you looked for a fix? What happened?"</li><li>"Who has this worse than you?" A referral and a sharper segment in one question.</li></ul><p>Do not pitch. Do not ask "would you use an app that". Do not ask if it is a good idea. Compliments and "I would totally use that" are noise. A recent incident, a number, a workaround or a quote is signal.</p></div></details>'+
+  '<details><summary>Reading your ten</summary><div class="in"><ul><li>Most hit it within the last month, several have a workaround, costs are specific: continue, and go deeper with the same people.</li><li>The problem is real but you talked to the wrong people, or it is too broad: change. Narrow the who or the what, then talk to five more.</li><li>Vague, old, painless: drop. Dropping now costs a week. Dropping in a year costs a company. The log gives a drop the same XP as a continue.</li></ul></div></details>';
+  var secB='<details'+(A?'':' open')+'><summary>Mapping a domain in a week</summary><div class="in"><ul><li>Applications: one encyclopedia page for breadth, then two recent review papers or industry reports (search the domain plus "review" on Google Scholar; check IEEE Spectrum, NITI Aayog or the relevant industry body for the Indian picture), then real product spec sheets. Concrete beats grand: "crop spraying for five-acre farms", not "agriculture".</li><li>Problems and limitations: the "Limitations" and "Future work" sections of papers, practitioner complaints on forums and teardown videos, and job postings (what companies hire for is what still hurts). Look for India-specific gaps: import dependence, cost, regulation, heat and dust.</li><li>Three knowledgeable people: professors and PhD scholars in your department (office hours work), REP founders, alumni on LinkedIn. One message: who you are, the five problems you found, a 15-minute ask. Then: "Which of these is real? What am I missing? What does everyone in this field know is broken, and why is nobody fixing it?"</li><li>Selecting one: severity, frequency, whether someone pays, and your access. Prefer the one you could start testing next week with what you already have.</li></ul></div></details>';
+  var secP='<details><summary>What a good one page looks like</summary><div class="in"><ul><li>Specific beats general: names or roles, dates, numbers, one or two real quotes.</li><li>Every field on the slide is filled, in the slide\'s order. The one page here follows it exactly.</li><li>A clear decision. DROP with ten real conversations behind it is a stronger page than CONTINUE with three.</li><li>Print it, or save it as a PDF from the print dialog. Bring paper if the session asks for paper.</li></ul></div></details>';
+  return '<h2>Field guide</h2><p class="muted">Short, because the assignment is about talking to people, not reading.</p>'+(A?secA+secB:secB+secA)+secP; }
+function remainingText(){ var left=QUESTS[state.track].filter(function(q){return !isDone(q,state);}).map(function(q){return q.title.toLowerCase();}); return left.length?'Still open: '+left.join('; ')+'.':''; }
+function viewPage(){ var ok=allDone(state);
+  return '<h2>Your one page</h2><p class="muted">'+(ok?'Every quest is complete. Print it, or save it as a PDF from the print dialog.':'You can print at any time; unfinished parts show as blanks. '+remainingText())+'</p><div class="row" style="margin-bottom:14px"><button class="btn accent" data-action="print">Print or save as PDF</button><button class="btn ghost" data-action="copy-text">Copy as text</button></div><p class="small muted">Preview below. On a phone it scrolls sideways; on paper it is one A4 page.</p>'; }
+
+function pageA(){ var s=state,p=s.A.problem,v=validInterviews(s),r=readout(s),d=s.A.decision; var quotes=v.filter(function(i){return !!trim(i.quote);}).slice(0,3);
+  return '<div class="op-wrap"><article class="op"><h1>'+esc(s.name||'Explorer')+'</h1><div class="meta"><span>Track A: I have a problem</span><span>Session 3'+(s.deadline?', '+fmtDate(s.deadline):'')+'</span></div>'+
+  '<h2>The problem</h2><p><b>'+(esc(trim(p.statement))||'<i>not written yet</i>')+'</b>'+(trim(p.who)?'<br>Who has it: '+esc(p.who):'')+(trim(p.why)?'<br>Why it matters: '+esc(p.why):'')+'</p>'+
+  '<h2>'+v.length+' relevant people I talked to</h2><table><thead><tr><th style="width:4%">#</th><th style="width:17%">Who</th><th style="width:17%">When it last happened</th><th>What they did</th><th>Cost / time / risk / effort</th><th>Existing workaround</th></tr></thead><tbody>'+
+  (v.length?v.map(function(i,k){ return '<tr><td>'+(k+1)+'</td><td>'+esc(i.who)+'</td><td>'+esc(whenLabel(i.when))+(trim(i.whenDetail)?': '+esc(i.whenDetail):'')+'</td><td>'+esc(i.did)+'</td><td>'+esc(i.cost)+(Number(i.pain)?' (pain '+i.pain+'/5)':'')+'</td><td>'+(i.workaround==='yes'?'Yes':i.workaround==='no'?'No':'')+(trim(i.workaroundText)?': '+esc(i.workaroundText):'')+'</td></tr>'; }).join(''):'<tr><td colspan="6"><i>No conversations logged yet</i></td></tr>')+'</tbody></table>'+
+  (r?'<p class="small" style="margin-top:4px">'+r.recent+' of '+r.n+' hit it within the last month; '+r.wa+' of '+r.n+' already have a workaround; average pain '+(r.avgPain?r.avgPain.toFixed(1):'–')+'/5.</p>':'')+
+  (quotes.length?'<p class="small">In their words: '+quotes.map(function(i){return '"'+esc(trim(i.quote))+'"';}).join(' / ')+'</p>':'')+
+  '<h2>3 strongest pieces of evidence</h2><ol>'+s.A.evidence.map(function(e){ return '<li>'+(esc(trim(e))||'<i>blank</i>')+'</li>'; }).join('')+'</ol>'+
+  '<h2>Decision</h2><p><span class="decision '+esc(d.choice)+'">'+(esc(d.choice)||'PENDING')+'</span></p>'+(trim(d.why)?'<p>'+esc(d.why)+'</p>':'')+(trim(d.next)?'<p>Next step: '+esc(d.next)+'</p>':'')+
+  '<p class="foot">Session 2 assignment, Track A. Research and Entrepreneurship Park, IIT Bhubaneswar.</p></article></div>'; }
+function pageB(){ var s=state,b=s.B,d=b.domain,pk=b.pick; var sel=pk.index>=0?b.problems[pk.index]:null; var scored=sel&&CRIT.every(function(c){return Number(sel[c[0]])>0;});
+  return '<div class="op-wrap"><article class="op"><h1>'+esc(s.name||'Explorer')+'</h1><div class="meta"><span>Track B: I have a domain</span><span>Session 3'+(s.deadline?', '+fmtDate(s.deadline):'')+'</span></div>'+
+  '<h2>Domain: '+(esc(trim(d.name))||'<i>not chosen yet</i>')+'</h2>'+(trim(d.why)?'<p>Why: '+esc(d.why)+'</p>':'')+(trim(d.access)?'<p>Access I already have: '+esc(d.access)+'</p>':'')+
+  '<h2>3 applications</h2><table><thead><tr><th style="width:4%">#</th><th style="width:28%">Application</th><th style="width:30%">Where, and by whom</th><th>Why it matters</th></tr></thead><tbody>'+b.apps.map(function(a,k){ return '<tr><td>'+(k+1)+'</td><td>'+esc(a.name)+'</td><td>'+esc(a.where)+'</td><td>'+esc(a.why)+'</td></tr>'; }).join('')+'</tbody></table>'+
+  '<h2>5 problems or limitations</h2><table><thead><tr><th style="width:4%">#</th><th style="width:34%">Problem</th><th style="width:20%">Who it hurts</th><th style="width:26%">Why still unsolved</th><th>Source</th></tr></thead><tbody>'+b.problems.map(function(p,k){ return '<tr'+(pk.index===k?' class="sel"':'')+'><td>'+(k+1)+'</td><td>'+esc(p.what)+(pk.index===k?' <b>(selected)</b>':'')+'</td><td>'+esc(p.who)+'</td><td>'+esc(p.whyUnsolved)+'</td><td>'+esc(p.source)+'</td></tr>'; }).join('')+'</tbody></table>'+
+  '<h2>3 knowledgeable people</h2><table><thead><tr><th style="width:4%">#</th><th style="width:24%">Who</th><th style="width:20%">How I reached them</th><th>Key insight</th><th style="width:12%">When</th></tr></thead><tbody>'+b.experts.map(function(e,k){ return '<tr><td>'+(k+1)+'</td><td>'+esc(e.name)+'</td><td>'+esc(e.how)+'</td><td>'+esc(e.insight)+'</td><td>'+esc(fmtDate(e.date))+'</td></tr>'; }).join('')+'</tbody></table>'+
+  '<h2>Selected for deeper investigation</h2><p><b>'+(sel&&trim(sel.what)?esc(sel.what):'<i>not selected yet</i>')+'</b>'+(scored?' (score '+(Number(sel.sev)+Number(sel.freq)+Number(sel.pay)+Number(sel.access))+'/20: severity '+sel.sev+', frequency '+sel.freq+', someone pays '+sel.pay+', my access '+sel.access+')':'')+'</p>'+(trim(pk.why)?'<p>Why: '+esc(pk.why)+'</p>':'')+(trim(pk.next)?'<p>Next 7 days: '+esc(pk.next)+'</p>':'')+
+  '<p class="foot">Session 2 assignment, Track B. Research and Entrepreneurship Park, IIT Bhubaneswar.</p></article></div>'; }
+function pageText(){ var s=state, L=[]; L.push((s.name||'Explorer')+' | '+(s.track==='A'?'Track A: I have a problem':'Track B: I have a domain')+' | Session 3'+(s.deadline?' '+fmtDate(s.deadline):''));
+  if(s.track==='A'){ var p=s.A.problem; L.push('','THE PROBLEM','  '+trim(p.statement)); if(trim(p.who))L.push('  Who has it: '+p.who); if(trim(p.why))L.push('  Why it matters: '+p.why);
+    var v=validInterviews(s); L.push('','PEOPLE I TALKED TO ('+v.length+')'); v.forEach(function(i,k){ L.push('  '+(k+1)+'. '+i.who); L.push('     Last happened: '+whenLabel(i.when)+(trim(i.whenDetail)?' ('+i.whenDetail+')':'')); if(trim(i.did))L.push('     What they did: '+i.did); if(trim(i.cost)||Number(i.pain))L.push('     Cost/time/risk/effort: '+i.cost+(Number(i.pain)?' (pain '+i.pain+'/5)':'')); if(i.workaround)L.push('     Workaround: '+(i.workaround==='yes'?'yes':i.workaround==='no'?'no':'did not ask')+(trim(i.workaroundText)?', '+i.workaroundText:'')); if(trim(i.quote))L.push('     Quote: "'+i.quote+'"'); });
+    var r=readout(s); if(r)L.push('  '+r.recent+' of '+r.n+' hit it within the last month; '+r.wa+' have a workaround; average pain '+(r.avgPain?r.avgPain.toFixed(1):'-')+'/5');
+    L.push('','3 STRONGEST PIECES OF EVIDENCE'); s.A.evidence.forEach(function(e,k){ L.push('  '+(k+1)+'. '+trim(e)); });
+    var d=s.A.decision; L.push('','DECISION: '+(d.choice||'PENDING')); if(trim(d.why))L.push('  '+d.why); if(trim(d.next))L.push('  Next step: '+d.next);
+  } else { var b=s.B; L.push('','DOMAIN: '+trim(b.domain.name)); if(trim(b.domain.why))L.push('  Why: '+b.domain.why); if(trim(b.domain.access))L.push('  Access: '+b.domain.access);
+    L.push('','3 APPLICATIONS'); b.apps.forEach(function(a,k){ L.push('  '+(k+1)+'. '+a.name+(trim(a.where)?' | '+a.where:'')+(trim(a.why)?' | '+a.why:'')); });
+    L.push('','5 PROBLEMS OR LIMITATIONS'); b.problems.forEach(function(p,k){ L.push('  '+(k+1)+'. '+p.what+(b.pick.index===k?' [SELECTED]':'')+(trim(p.who)?' | hurts: '+p.who:'')+(trim(p.whyUnsolved)?' | unsolved because: '+p.whyUnsolved:'')+(trim(p.source)?' | source: '+p.source:'')); });
+    L.push('','3 KNOWLEDGEABLE PEOPLE'); b.experts.forEach(function(e,k){ L.push('  '+(k+1)+'. '+e.name+(trim(e.how)?' | via '+e.how:'')+(e.date?' | '+fmtDate(e.date):'')); if(trim(e.insight))L.push('     Insight: '+e.insight); });
+    var sel=pickOk(s)?b.problems[b.pick.index]:null; L.push('','SELECTED FOR DEEPER INVESTIGATION'); L.push('  '+(sel?sel.what:'not selected yet')); if(trim(b.pick.why))L.push('  Why: '+b.pick.why); if(trim(b.pick.next))L.push('  Next 7 days: '+b.pick.next); }
+  return L.join('\n'); }
+function statusText(){ var xp=xpOf(state), Lv=levelOf(xp); var parts=QUESTS[state.track].map(function(q){ var p=q.progress(state); return q.short+' '+p[0]+'/'+p[1]; });
+  var badges=BADGES.filter(function(b){return (!b.track||b.track===state.track)&&b.when(state);}).map(function(b){return b.ic;}).join('');
+  return '🧭 Expedition log: '+(state.name||'Explorer')+'\nTrack '+state.track+': '+(state.track==='A'?'I have a problem':'I have a domain')+'\n'+Lv.name+', '+xp+' XP\n'+parts.join(' | ')+(badges?'\nBadges: '+badges:''); }
+
+/* ---------- render ---------- */
+function render(){ document.body.setAttribute('data-track',state.track||''); var app=$('#app'); var body='';
+  if(!state.track||ui.screen==='intro') body=viewIntro();
+  else if(ui.screen==='camp') body=viewCamp();
+  else if(ui.screen==='step') body=viewStep();
+  else if(ui.screen==='guide') body=viewGuide();
+  else if(ui.screen==='page') body=viewPage();
+  var chrome=state.track&&ui.screen!=='intro';
+  app.innerHTML=(chrome?strip():'')+'<main class="wrap">'+body+'</main>'+(chrome?navBar():'');
+  renderOnePage(); }
+function renderOnePage(){ var el=$('#onepage'); el.className=(ui.screen==='page'&&state.track)?'show':''; el.innerHTML=state.track?(state.track==='A'?pageA():pageB()):''; }
+function nav(screen,step,editing){ ui.screen=screen; ui.step=step||null; ui.editing=editing||null; render(); try{ window.scrollTo(0,0); }catch(e){} }
+function updateStrip(){ var h=$('.strip'); if(h){ h.outerHTML=strip(); } }
+function toast(html,cls){ var box=$('#toasts'); if(!box)return; var t=document.createElement('div'); t.className='toast'+(cls?' '+cls:''); t.innerHTML=html; while(box.children.length>=3)box.removeChild(box.firstChild); box.appendChild(t); setTimeout(function(){ t.style.transition='opacity .4s'; t.style.opacity='0'; setTimeout(function(){ if(t.parentNode)t.parentNode.removeChild(t); },420); },2800); }
+
+var confetti=(function(){ var c=$('#confetti'),ctx=null,parts=[],raf=null;
+  function fire(n){ try{ if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return; ctx=c.getContext('2d'); if(!ctx)return; c.width=window.innerWidth; c.height=window.innerHeight; c.style.display='block';
+    var cols=['#EF8A17','#3D5AD1','#1B2A22','#8FD3B4','#FFD166']; for(var i=0;i<(n||90);i++)parts.push({x:c.width/2+(Math.random()-.5)*160,y:c.height*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*12-4,g:.35,w:6+Math.random()*6,h:8+Math.random()*8,r:Math.random()*Math.PI,vr:(Math.random()-.5)*.3,col:cols[i%cols.length],life:90+Math.random()*40});
+    if(!raf)tick(); }catch(e){} }
+  function tick(){ ctx.clearRect(0,0,c.width,c.height); parts=parts.filter(function(p){return p.life>0;}); parts.forEach(function(p){ p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; p.vx*=.98; p.r+=p.vr; p.life--; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle=p.col; ctx.globalAlpha=Math.min(1,p.life/30); ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore(); });
+    if(parts.length)raf=requestAnimationFrame(tick); else { raf=null; c.style.display='none'; } }
+  return {fire:fire}; })();
+
+function checkProgress(){ var xp=xpOf(state), L=levelOf(xp); var earned={}; BADGES.forEach(function(b){ if(b.when(state))earned[b.id]=b; });
+  if(ready){ Object.keys(earned).forEach(function(id){ if(lastBadges[id])return; var b=earned[id]; if(b.track&&b.track!==state.track)return; toast('<span class="ic">'+b.ic+'</span><span><b>Badge: '+esc(b.name)+'</b><br>'+esc(b.desc)+'</span>','badge-toast'); if(b.big)confetti.fire(); });
+    if(L.index>lastLevel)toast('<span class="ic">⬆️</span><span><b>Level up: '+esc(L.name)+'</b></span>'); }
+  lastBadges=earned; lastLevel=L.index; updateStrip(); }
+function onChange(){ scheduleSave(); checkProgress(); var sb=$('#sigbox'); if(sb&&ui.editing){ for(var k=0;k<state.A.interviews.length;k++){ if(state.A.interviews[k].id===ui.editing){ sb.innerHTML=signalBox(state.A.interviews[k]); break; } } } }
+
+/* ---------- events ---------- */
+function onInput(e){ var el=e.target; if(!el||!el.getAttribute)return; var path=el.getAttribute('data-bind'); if(!path)return; setPath(state,path,el.value);
+  if(el.id){ var c=$('[data-counter-for="'+el.id+'"]'); if(c&&el.maxLength>0)c.textContent=el.value.length+'/'+el.maxLength; }
+  onChange(); }
+document.addEventListener('input',onInput);
+document.addEventListener('change',function(e){ var el=e.target; if(el&&el.id==='importfile'){ var f=el.files&&el.files[0]; if(!f)return; var rd=new FileReader(); rd.onload=function(){ try{ var obj=JSON.parse(rd.result); if(!obj||typeof obj!=='object'||!obj.A||!obj.B)throw new Error('bad'); state=migrate(obj); store.save(state); ready=false; checkProgress(); ready=true; toast('Backup restored'); nav(state.track?'camp':'intro'); }catch(err){ toast('That file is not an Expedition Log backup'); } }; rd.readAsText(f); return; } onInput(e); });
+document.addEventListener('click',function(e){ var t=e.target.closest?e.target.closest('[data-action],[data-set]'):null; if(!t)return;
+  var setPathAttr=t.getAttribute('data-set');
+  if(setPathAttr){ var val=t.hasAttribute('data-num')?Number(t.getAttribute('data-value')):t.getAttribute('data-value'); setPath(state,setPathAttr,val);
+    $$('[data-set="'+setPathAttr+'"]').forEach(function(b){ b.setAttribute('aria-pressed',String(String(val)===b.getAttribute('data-value'))); });
+    $$('[data-bind="'+setPathAttr+'"]').forEach(function(inp){ inp.value=val; });
+    onChange(); if(ui.screen==='step'&&(ui.step==='pick'||ui.step==='decision'))render(); return; }
+  handleAction(t.getAttribute('data-action'),t); });
+function handleAction(a,t){ switch(a){
+  case 'choose-track': { var tr=t.getAttribute('data-track'); var first=!state.track; state.track=tr; store.save(state); if(first){ ready=false; checkProgress(); ready=true; } checkProgress(); nav('camp'); toast('<span class="ic">'+(tr==='A'?'🎯':'🗺️')+'</span><span><b>Track '+tr+' chosen.</b><br>Welcome to base camp.</span>'); break; }
+  case 'camp': nav('camp'); break;
+  case 'guide': nav('guide'); break;
+  case 'page': nav('page'); break;
+  case 'goto-step': nav('step',t.getAttribute('data-step')); break;
+  case 'add-interview': { if(state.A.interviews.length>=15){ toast('Fifteen is plenty. Move on to the evidence.'); break; } var ni=newInterview(); state.A.interviews.push(ni); scheduleSave(); nav('step','interviews',ni.id); break; }
+  case 'edit-interview': nav('step','interviews',t.getAttribute('data-id')); break;
+  case 'del-interview': { var id=t.getAttribute('data-id'); if(!window.confirm('Delete this conversation?'))break; state.A.interviews=state.A.interviews.filter(function(i){return i.id!==id;}); onChange(); nav('step','interviews'); toast('Deleted'); break; }
+  case 'use-cand': { var k=-1; for(var j=0;j<3;j++){ if(!trim(state.A.evidence[j])){k=j;break;} } if(k<0){ toast('All three slots are full. Clear one to swap.'); break; } state.A.evidence[k]=t.getAttribute('data-text'); onChange(); render(); toast('Added as evidence '+(k+1)); break; }
+  case 'pick': { state.B.pick.index=Number(t.getAttribute('data-index')); onChange(); render(); break; }
+  case 'print': { ui.screen='page'; render(); setTimeout(function(){ try{ window.print(); }catch(e){ toast('Use your browser\'s share or print menu.'); } },60); break; }
+  case 'copy-text': copyText(pageText(),'Copied. Paste it into any document.'); break;
+  case 'copy-status': copyText(statusText(),'Copied. Paste it in the group.'); break;
+  case 'export': exportJSON(); break;
+  case 'import': { var fi=$('#importfile'); if(fi)fi.click(); break; }
+  case 'switch-track': nav('intro'); break;
+  case 'reset': { if(!window.confirm('Start over? This erases everything in this log on this device.'))break; state=defaultState(); store.save(state); ready=false; checkProgress(); ready=true; nav('intro'); break; }
+} }
+function copyText(txt,ok){ var done=function(){ toast(ok); }; var fallback=function(){ try{ var ta=document.createElement('textarea'); ta.value=txt; ta.setAttribute('readonly',''); ta.style.position='fixed'; ta.style.top='-1000px'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); }catch(e){ toast('Copy failed. Select the text and copy it by hand.'); } };
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done,fallback); return; } }catch(e){} fallback(); }
+function exportJSON(){ try{ var blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='expedition-log-'+((state.name||'explorer').replace(/\W+/g,'-').toLowerCase())+'.json'; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); if(a.parentNode)a.parentNode.removeChild(a); },500); toast('Backup downloaded'); }catch(e){ toast('Download blocked here. Use "Copy as text" instead.'); } }
+
+/* ---------- boot ---------- */
+store.load().then(function(saved){ state=migrate(saved); ready=false; checkProgress(); ready=true; ui.screen=state.track?'camp':'intro'; render(); }).catch(function(){ state=defaultState(); ready=true; render(); });
+})();
+</script>
+</body>
+</html>
